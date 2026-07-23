@@ -1,0 +1,93 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(cuid())
+  email     String     @unique
+  passwordHash String
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  transactions         Transaction[]
+  budgets              Budget[]
+  categories           Category[]
+  recurringTransactions RecurringTransaction[]
+
+  @@map("users")
+}
+
+model Category {
+  id        String     @id @default(cuid())
+  name      String
+  type      String     // INCOME or EXPENSE
+  userId    String?
+  user      User?      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime   @default(now())
+
+  transactions Transaction[]
+  budgets      Budget[]
+
+  @@unique([userId, name])
+  @@map("categories")
+}
+
+model Transaction {
+  id          String     @id @default(cuid())
+  amount      Float
+  type        String     // INCOME or EXPENSE
+  description String?
+  date        DateTime
+  userId      String
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId  String
+  category    Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([userId])
+  @@index([date])
+  @@index([type])
+  @@map("transactions")
+}
+
+model Budget {
+  id        String     @id @default(cuid())
+  amount    Float
+  period    String     // WEEK, MONTH, or YEAR
+  userId    String
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  categoryId String
+  category  Category   @relation(fields: [categoryId], references: [id], onDelete: Restrict)
+  startDate DateTime
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+
+  @@unique([userId, categoryId, period, startDate])
+  @@index([userId])
+  @@map("budgets")
+}
+
+model RecurringTransaction {
+  id          String      @id @default(cuid())
+  amount      Float
+  type        String      // INCOME or EXPENSE
+  description String?
+  frequency   String      // WEEKLY, MONTHLY, or YEARLY
+  categoryId  String
+  userId      String
+  user        User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  nextDate    DateTime
+  lastProcessed DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  @@index([userId])
+  @@index([nextDate])
+  @@map("recurring_transactions")
+}
