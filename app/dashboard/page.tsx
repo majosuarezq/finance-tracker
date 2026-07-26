@@ -6,10 +6,32 @@ import { useRouter } from "next/navigation";
 export default function DashboardPage() {
   const router = useRouter();
   const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    setLoading(false);
-  }, []);
+    // Check if user is authenticated by verifying token exists
+    const checkAuth = async () => {
+      try {
+        const response = await fetch("/api/test");
+        const data = await response.json();
+
+        if (!data.hasCookie) {
+          // No auth token, redirect to login
+          router.push("/login");
+          return;
+        }
+
+        setUser({ authenticated: true });
+      } catch (err) {
+        console.error("Auth check failed:", err);
+        router.push("/login");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    checkAuth();
+  }, [router]);
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
