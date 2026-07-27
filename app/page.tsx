@@ -5,20 +5,27 @@ import { useState } from "react";
 export default function Home() {
   const [tab, setTab] = useState("dashboard");
   const [gastos, setGastos] = useState([]);
-  const [form, setForm] = useState({ concepto: "", monto: "", moneda: "ARS" });
+  const [concepto, setConcepto] = useState("");
+  const [monto, setMonto] = useState("");
+  const [moneda, setMoneda] = useState("ARS");
 
   const agregarGasto = () => {
-    if (!form.concepto || !form.monto) return alert("Completa concepto y monto");
+    if (!concepto.trim() || !monto.trim()) {
+      alert("Completa todos los campos");
+      return;
+    }
 
     const nuevo = {
       id: Date.now(),
-      ...form,
-      monto: parseFloat(form.monto),
+      concepto: concepto.trim(),
+      monto: parseFloat(monto),
+      moneda: moneda,
     };
 
     setGastos([...gastos, nuevo]);
-    setForm({ concepto: "", monto: "", moneda: "ARS" });
-    alert("✅ Gasto agregado");
+    setConcepto("");
+    setMonto("");
+    alert("✅ Gasto guardado");
   };
 
   const mesActual = new Date().toISOString().substring(0, 7);
@@ -39,10 +46,18 @@ export default function Home() {
 
       <div className="max-w-2xl mx-auto p-6">
         <div className="flex gap-4 mb-6">
-          <button onClick={() => setTab("dashboard")} className={`px-4 py-2 rounded font-bold ${tab === "dashboard" ? "bg-indigo-600 text-white" : "bg-white border-2 border-indigo-600"}`}>
+          <button
+            type="button"
+            onClick={() => setTab("dashboard")}
+            className={`px-4 py-2 rounded font-bold cursor-pointer ${tab === "dashboard" ? "bg-indigo-600 text-white" : "bg-white border-2 border-indigo-600"}`}
+          >
             Dashboard
           </button>
-          <button onClick={() => setTab("agregar")} className={`px-4 py-2 rounded font-bold ${tab === "agregar" ? "bg-indigo-600 text-white" : "bg-white border-2 border-indigo-600"}`}>
+          <button
+            type="button"
+            onClick={() => setTab("agregar")}
+            className={`px-4 py-2 rounded font-bold cursor-pointer ${tab === "agregar" ? "bg-indigo-600 text-white" : "bg-white border-2 border-indigo-600"}`}
+          >
             Agregar
           </button>
         </div>
@@ -84,22 +99,22 @@ export default function Home() {
               <input
                 type="text"
                 placeholder="Concepto (ej: Comida)"
-                value={form.concepto}
-                onChange={(e) => setForm({...form, concepto: e.target.value})}
+                value={concepto}
+                onChange={(e) => setConcepto(e.target.value)}
                 className="w-full p-3 border-2 border-gray-300 rounded"
               />
 
               <input
                 type="number"
                 placeholder="Monto (ej: 500)"
-                value={form.monto}
-                onChange={(e) => setForm({...form, monto: e.target.value})}
+                value={monto}
+                onChange={(e) => setMonto(e.target.value)}
                 className="w-full p-3 border-2 border-gray-300 rounded"
               />
 
               <select
-                value={form.moneda}
-                onChange={(e) => setForm({...form, moneda: e.target.value})}
+                value={moneda}
+                onChange={(e) => setMoneda(e.target.value)}
                 className="w-full p-3 border-2 border-gray-300 rounded"
               >
                 <option>ARS</option>
@@ -107,8 +122,9 @@ export default function Home() {
               </select>
 
               <button
+                type="button"
                 onClick={agregarGasto}
-                className="w-full bg-green-600 text-white p-3 rounded font-bold text-lg hover:bg-green-700"
+                className="w-full bg-green-600 text-white p-3 rounded font-bold text-lg hover:bg-green-700 cursor-pointer"
               >
                 ✅ GUARDAR GASTO
               </button>
